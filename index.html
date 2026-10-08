@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2457d6">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>غیاباتی خوێندکاران</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -51,6 +56,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-off
 .note{color:var(--mu);font-size:.8rem;margin-top:12px}
 .scroll{overflow-x:auto}
 .login{max-width:360px;margin:12vh auto 0}.login input{width:100%;margin-bottom:10px}.login .all{width:100%;padding:11px}
+.inst{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem}
 .chk{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px 12px;font-size:.88rem}
 </style>
 </head>
@@ -139,6 +145,16 @@ async function exportX(){
   S.msg='فایلی Excel داگیرا';render();
 }
 
+var DP=null,standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone,isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();DP=e;render()});
+window.addEventListener('appinstalled',function(){DP=null;standalone=true;render()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+function vInstall(){
+  if(standalone)return '';
+  if(DP)return '<div class="row inst"><span>وەک ئەپ دایبەزێنە بۆ کردنەوەی خێراتر</span><button class="all" data-a="install">دابەزاندن</button></div>';
+  if(isIOS)return '<div class="row inst"><span>لە iPhone: دوگمەی Share ← Add to Home Screen</span></div>';
+  return '';
+}
 function vLogin(){
   return '<div class="login"><h1>غیاباتی خوێندکاران</h1><p class="sub">چوونەژوورەوە</p>'+(S.err?'<div class="err">'+esc(S.err)+'</div>':'')+
   '<input id="em" type="email" placeholder="ئیمەیڵ" autocomplete="username" dir="ltr"><input id="pw" type="password" placeholder="وشەی نهێنی" autocomplete="current-password" dir="ltr"><button class="all" data-a="login">چوونەژوورەوە</button></div>';
@@ -179,9 +195,10 @@ function vTeachers(){
 function render(){
   var app=$('app');
   if(!S.ready){app.innerHTML='<p class="sub">چاوەڕێ بکە...</p>';return}
-  if(!S.prof){app.innerHTML=vLogin();return}
+  if(!S.prof){app.innerHTML=vLogin()+'<div style="max-width:360px;margin:16px auto 0">'+vInstall()+'</div>';return}
   var tabs=isA()?[['att','تۆمارکردن'],['rep','ڕاپۆرت'],['crs','وانەکان'],['tch','مامۆستاکان']]:[['rep','ڕاپۆرت']];
   var c=cc(),h='<div class="top"><div><h1>غیاباتی خوێندکاران</h1><p class="sub" style="margin:0">'+esc(S.prof.full_name||S.prof.email)+' · '+(isA()?'ئەدمین':'مامۆستا')+'</p></div><button class="ghost" data-a="out">دەرچوون</button></div>';
+  h+=vInstall();
   if(S.err)h+='<div class="err">'+esc(S.err)+'</div>';
   h+='<div class="courses">'+S.courses.map(function(x){return '<button class="course'+(x.id==S.cur?' on':'')+'" data-a="course" data-id="'+x.id+'"><b>'+esc(x.name)+'</b><span>'+esc(x.day)+' · '+esc(x.time)+'</span></button>'}).join('')+'</div>';
   if(tabs.length>1)h+='<div class="tabs">'+tabs.map(function(t){return '<button class="tab'+(S.tab==t[0]?' on':'')+'" data-a="tab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
@@ -194,6 +211,7 @@ function render(){
 
 document.addEventListener('click',async function(e){
   var b=e.target.closest('button');if(!b||!b.dataset.a)return;var a=b.dataset.a,id=b.dataset.id;S.err='';
+  if(a=='install'&&DP){DP.prompt();await DP.userChoice;DP=null;return render()}
   if(a=='login')return login();
   if(a=='out')return logout();
   if(a=='tab'){S.tab=id;S.armed='';S.msg='';await loadTab();return render()}
