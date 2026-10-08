@@ -1,0 +1,275 @@
+[Uploading index.html…]()
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2457d6">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>غیاباتی خوێندکاران</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f7;--card:#fff;--tx:#14213d;--mu:#667085;--bd:#dde3ec;--ac:#2457d6;--acx:#fff;--p:#13804f;--pb:#dcf3e7;--a:#c42b3b;--ab:#fde4e7;--e:#a8650a;--eb:#fdefd2}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1420;--card:#18202f;--tx:#e8edf6;--mu:#93a0b5;--bd:#2a3447;--ac:#6d93ff;--acx:#0e1420;--p:#4cd08c;--pb:#173a2b;--a:#ff7b88;--ab:#43202a;--e:#f0b357;--eb:#40301a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Vazirmatn',Tahoma,system-ui,sans-serif;line-height:1.6;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+h1{font-size:1.25rem;font-weight:800;margin:4px 0}
+.sub{color:var(--mu);font-size:.85rem;margin:0 0 10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.courses{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto}
+.course{flex:0 0 auto;min-width:130px;text-align:right;background:var(--card);border:2px solid var(--bd);border-radius:12px;padding:8px 12px;color:var(--tx);font:inherit;cursor:pointer}
+.course b{display:block;font-size:.92rem}.course span{font-size:.76rem;color:var(--mu)}
+.course.on{border-color:var(--ac)}
+.tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:12px}
+.tab{flex:1;background:none;border:0;padding:10px 4px;font:inherit;font-size:.86rem;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab.on{color:var(--ac);border-color:var(--ac)}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);min-width:0}
+.sum{font-size:.82rem;color:var(--mu);margin-inline-start:auto}
+.row{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.nm{font-weight:600;margin-bottom:8px}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.btns button{font:inherit;font-size:.88rem;padding:8px 4px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--mu);cursor:pointer}
+.btns .p.on{background:var(--pb);color:var(--p);border-color:var(--p);font-weight:600}
+.btns .a.on{background:var(--ab);color:var(--a);border-color:var(--a);font-weight:600}
+.btns .e.on{background:var(--eb);color:var(--e);border-color:var(--e);font-weight:600}
+.all{font:inherit;background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+.ghost{font:inherit;background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:6px 10px;cursor:pointer}
+.danger{font:inherit;background:var(--ab);color:var(--a);border:1px solid var(--a);border-radius:8px;padding:6px 12px;margin-top:6px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.rep{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;font-size:.88rem}
+.rep th,.rep td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--bd)}
+.rep th{background:var(--bg);color:var(--mu);font-size:.78rem}
+.rep td:first-child,.rep th:first-child{text-align:right}
+.pill{display:inline-block;min-width:48px;padding:1px 8px;border-radius:99px;font-weight:600}
+.ok{background:var(--pb);color:var(--p)}.warn{background:var(--eb);color:var(--e)}.bad{background:var(--ab);color:var(--a)}
+.g3{display:grid;grid-template-columns:2fr 1.2fr 1fr;gap:6px;margin-bottom:8px}.g3 input{width:100%}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:1px 4px 1px 10px;margin:0 0 6px 6px;font-size:.84rem}
+.chip button{background:none;border:0;color:var(--a);font-size:1.1rem;cursor:pointer;padding:0 6px}
+.add{display:flex;gap:8px;margin-top:6px}.add input{flex:1}
+.err{background:var(--ab);color:var(--a);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.85rem}
+.note{color:var(--mu);font-size:.8rem;margin-top:12px}
+.scroll{overflow-x:auto}
+.login{max-width:360px;margin:12vh auto 0}.login input{width:100%;margin-bottom:10px}.login .all{width:100%;padding:11px}
+.inst{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem}
+.chk{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px 12px;font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+var SB_URL='https://tuzurgxqhcjdnnqydamu.supabase.co';
+var SB_KEY='sb_publishable_AYxHoDMEctSuZ1u_hHyALg_bw7TT3mJ';
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var today=new Date().toISOString().slice(0,10);
+var S={user:null,prof:null,courses:[],students:[],teachers:[],tc:[],cur:'',tab:'att',date:today,month:today.slice(0,7),att:{},rep:[],err:'',msg:'',armed:'',ready:false};
+var isA=function(){return S.prof&&S.prof.role=='admin'};
+var $=function(id){return document.getElementById(id)};
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function cc(){return S.courses.find(function(c){return c.id==S.cur})}
+function fail(r){if(r&&r.error){S.err=r.error.message;return true}return false}
+
+async function boot(){
+  var s=await sb.auth.getSession();
+  if(!s.data.session){S.user=null;S.ready=true;return render()}
+  S.user=s.data.session.user;
+  var p=await sb.from('profiles').select('*').eq('id',S.user.id).single();
+  S.prof=p.data;
+  if(!S.prof){S.err='پڕۆفایلەکەت نەدۆزرایەوە';S.ready=true;return render()}
+  await loadBase();S.tab=isA()?'att':'rep';await loadTab();S.ready=true;render();
+}
+async function loadBase(){
+  var r=await Promise.all([sb.from('courses').select('*').order('created_at'),sb.from('students').select('*').order('created_at')]);
+  fail(r[0]);fail(r[1]);S.courses=r[0].data||[];S.students=r[1].data||[];
+  if(!cc())S.cur=S.courses[0]?S.courses[0].id:'';
+  if(isA()){var t=await Promise.all([sb.from('profiles').select('*').eq('role','teacher').order('created_at'),sb.from('teacher_courses').select('*')]);S.teachers=t[0].data||[];S.tc=t[1].data||[]}
+}
+async function loadTab(){
+  if(!S.cur)return;
+  if(S.tab=='att'){var r=await sb.from('attendance').select('student_id,status').eq('course_id',S.cur).eq('date',S.date);fail(r);S.att={};(r.data||[]).forEach(function(x){S.att[x.student_id]=x.status})}
+  if(S.tab=='rep'){S.rep=await fetchAtt(S.cur,S.month)}
+}
+async function fetchAtt(cid,m){
+  var p=m.split('-'),last=new Date(+p[0],+p[1],0).getDate(),out=[],from=0;
+  for(;;){
+    var r=await sb.from('attendance').select('student_id,date,status').eq('course_id',cid).gte('date',m+'-01').lte('date',m+'-'+String(last).padStart(2,'0')).order('date').range(from,from+999);
+    if(fail(r))break;out=out.concat(r.data);if(r.data.length<1000)break;from+=1000;
+  }
+  return out;
+}
+function calc(cid,rows){
+  var sts=S.students.filter(function(s){return s.course_id==cid}),map={},ds=[];
+  rows.forEach(function(r){map[r.student_id+'|'+r.date]=r.status;if(ds.indexOf(r.date)<0)ds.push(r.date)});ds.sort();
+  return{ds:ds,out:sts.map(function(s){var p=0,a=0,e=0,cells=ds.map(function(d){var v=map[s.id+'|'+d];if(v=='p'){p++;return'ئامادە'}if(v=='a'){a++;return'غائیب'}if(v=='e'){e++;return'مۆڵەت'}return''});
+    return{n:s.name,cells:cells,p:p,a:a,e:e,pct:ds.length?Math.round(a/ds.length*100):0}})};
+}
+
+async function login(){
+  var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if(r.error){S.err=/fetch|network/i.test(r.error.message)?'پەیوەندی بە داتابەیسەوە نەکرا. فایلەکە لەسەر Netlify بکەرەوە، نەک لەناو Claude.':'ئیمەیڵ یان وشەی نهێنی هەڵەیە';render();return}
+  S.err='';await boot();
+}
+async function logout(){await sb.auth.signOut();S.prof=null;S.user=null;S.courses=[];S.students=[];S.err='';render()}
+async function setS(sid,v){S.att[sid]=v;render();fail(await sb.from('attendance').upsert({course_id:S.cur,student_id:sid,date:S.date,status:v},{onConflict:'student_id,date'}));if(S.err)render()}
+async function allP(){
+  var rows=S.students.filter(function(s){return s.course_id==S.cur}).map(function(s){S.att[s.id]='p';return{course_id:S.cur,student_id:s.id,date:S.date,status:'p'}});
+  render();if(!rows.length)return;fail(await sb.from('attendance').upsert(rows,{onConflict:'student_id,date'}));if(S.err)render();
+}
+async function addCourse(){
+  var n=$('ncn').value.trim();if(!n)return;
+  fail(await sb.from('courses').insert({name:n,day:$('ncd').value.trim(),time:$('nct').value.trim()}));
+  await loadBase();render();
+}
+async function addStudent(cid){
+  var el=$('ns_'+cid),n=el.value.trim();if(!n)return;
+  fail(await sb.from('students').insert({course_id:cid,name:n}));await loadBase();render();
+}
+async function exportX(){
+  S.msg='تکایە چاوەڕێ بکە...';render();
+  var wb=XLSX.utils.book_new(),used={};
+  for(var i=0;i<S.courses.length;i++){
+    var c=S.courses[i],r=calc(c.id,await fetchAtt(c.id,S.month)),aoa=[['ناوی خوێندکار'].concat(r.ds,['ئامادە','غائیب','مۆڵەت','ڕێژەی غیاب %'])];
+    r.out.forEach(function(o){aoa.push([o.n].concat(o.cells,[o.p,o.a,o.e,o.pct]))});
+    var ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:22}];
+    var sn=c.name.replace(/[\[\]:*?\/\\]/g,'').slice(0,28)||'sheet';if(used[sn])sn+=' '+(i+1);used[sn]=1;
+    XLSX.utils.book_append_sheet(wb,ws,sn);
+  }
+  wb.Workbook={Views:[{RTL:true}]};
+  var buf=XLSX.write(wb,{bookType:'xlsx',type:'array'}),url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})),a=document.createElement('a');
+  a.href=url;a.download='attendance-'+S.month+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},3000);
+  S.msg='فایلی Excel داگیرا';render();
+}
+
+var DP=null,standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone,isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();DP=e;render()});
+window.addEventListener('appinstalled',function(){DP=null;standalone=true;render()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+function vInstall(){
+  if(standalone)return '';
+  if(DP)return '<div class="row inst"><span>وەک ئەپ دایبەزێنە بۆ کردنەوەی خێراتر</span><button class="all" data-a="install">دابەزاندن</button></div>';
+  if(isIOS)return '<div class="row inst"><span>لە iPhone: دوگمەی Share ← Add to Home Screen</span></div>';
+  return '';
+}
+function vLogin(){
+  return '<div class="login"><h1>غیاباتی خوێندکاران</h1><p class="sub">چوونەژوورەوە</p>'+(S.err?'<div class="err">'+esc(S.err)+'</div>':'')+
+  '<input id="em" type="email" placeholder="ئیمەیڵ" autocomplete="username" dir="ltr"><input id="pw" type="password" placeholder="وشەی نهێنی" autocomplete="current-password" dir="ltr"><button class="all" data-a="login">چوونەژوورەوە</button></div>';
+}
+function vAtt(c){
+  var sts=S.students.filter(function(s){return s.course_id==c.id}),np=0,na=0,ne=0;
+  sts.forEach(function(s){var v=S.att[s.id];if(v=='p')np++;if(v=='a')na++;if(v=='e')ne++});
+  var h='<div class="bar"><input type="date" id="dt" value="'+S.date+'"><button class="all" data-a="allp">هەمووی ئامادە</button><span class="sum">ئامادە '+np+' · غائیب '+na+' · مۆڵەت '+ne+'</span></div>';
+  if(!sts.length)h+='<p class="sub">ئەم وانەیە خوێندکاری نییە. لە «وانەکان» زیادیان بکە.</p>';
+  sts.forEach(function(s){var v=S.att[s.id];h+='<div class="row"><div class="nm">'+esc(s.name)+'</div><div class="btns">'+
+    [['p','ئامادە'],['a','غائیب'],['e','مۆڵەت']].map(function(t){return '<button class="'+t[0]+(v==t[0]?' on':'')+'" data-a="st" data-i="'+s.id+'" data-v="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div></div>'});
+  return h;
+}
+function vRep(c){
+  var r=calc(c.id,S.rep);
+  var h='<div class="bar"><input type="month" id="mo" value="'+S.month+'"><button class="all" data-a="xl">داگرتنی Excel</button></div>'+(S.msg?'<p class="sub">'+esc(S.msg)+'</p>':'')+'<p class="sub">ژمارەی وانە تۆمارکراوەکان: '+r.ds.length+'</p>';
+  if(!r.ds.length)return h+'<p class="sub">لەم مانگەدا غیاب تۆمار نەکراوە.</p>';
+  return h+'<div class="scroll"><table class="rep"><tr><th>خوێندکار</th><th>ئامادە</th><th>غائیب</th><th>مۆڵەت</th><th>ڕێژەی غیاب</th></tr>'+
+    r.out.map(function(x){var k=x.pct>=25?'bad':x.pct>=10?'warn':'ok';return '<tr><td>'+esc(x.n)+'</td><td>'+x.p+'</td><td>'+x.a+'</td><td>'+x.e+'</td><td><span class="pill '+k+'">'+x.pct+'%</span></td></tr>'}).join('')+'</table></div><p class="note">فایلی Excel هەموو وانەکانت لەخۆ دەگرێت، هەر وانەیەک لە شیتێکی جیا.</p>';
+}
+function vCourses(){
+  var h='';
+  S.courses.forEach(function(x){
+    h+='<div class="row"><div class="g3"><input data-cf="name" data-id="'+x.id+'" value="'+esc(x.name)+'" aria-label="ناوی وانە"><input data-cf="day" data-id="'+x.id+'" value="'+esc(x.day)+'" aria-label="ڕۆژ"><input data-cf="time" data-id="'+x.id+'" value="'+esc(x.time)+'" aria-label="کات"></div><div>'+
+    S.students.filter(function(s){return s.course_id==x.id}).map(function(s){return '<span class="chip">'+esc(s.name)+'<button data-a="delst" data-id="'+s.id+'" aria-label="سڕینەوە">×</button></span>'}).join('')+'</div>'+
+    '<div class="add"><input id="ns_'+x.id+'" placeholder="ناوی خوێندکاری نوێ"><button class="all" data-a="addst" data-id="'+x.id+'">زیادکردن</button></div>'+
+    '<button class="danger" data-a="delc" data-id="'+x.id+'">'+(S.armed==x.id?'دڵنیایت؟ هەموو خوێندکار و غیابەکانیشی دەسڕێنەوە. دووبارە کلیک بکە':'سڕینەوەی وانە')+'</button></div>';
+  });
+  return h+'<div class="row"><div class="nm">وانەی نوێ</div><div class="g3"><input id="ncn" placeholder="ناوی وانە"><input id="ncd" placeholder="ڕۆژ"><input id="nct" placeholder="کات"></div><button class="all" data-a="addc">زیادکردنی وانە</button></div>';
+}
+function vTeachers(){
+  if(!S.teachers.length)return '<p class="sub">هێشتا هیچ مامۆستایەک نییە. لە Supabase بچۆ بۆ Authentication ← Users ← Add user و ئەکاونتی مامۆستا دروست بکە، پاشان لێرە دەرکەوێت و وانەکانی دیاری بکە.</p>';
+  return S.teachers.map(function(t){
+    return '<div class="row"><div class="nm">'+esc(t.email)+'</div><input data-tn="'+t.id+'" value="'+esc(t.full_name||'')+'" placeholder="ناوی مامۆستا" style="width:100%;margin-bottom:8px"><div>'+
+    S.courses.map(function(c){var on=S.tc.some(function(k){return k.teacher_id==t.id&&k.course_id==c.id});return '<label class="chk"><input type="checkbox" data-tc="'+t.id+'|'+c.id+'"'+(on?' checked':'')+'>'+esc(c.name)+'</label>'}).join('')+'</div></div>';
+  }).join('');
+}
+function render(){
+  var app=$('app');
+  if(!S.ready){app.innerHTML='<p class="sub">چاوەڕێ بکە...</p>';return}
+  if(!S.prof){app.innerHTML=vLogin()+'<div style="max-width:360px;margin:16px auto 0">'+vInstall()+'</div>';return}
+  var tabs=isA()?[['att','تۆمارکردن'],['rep','ڕاپۆرت'],['crs','وانەکان'],['tch','مامۆستاکان']]:[['rep','ڕاپۆرت']];
+  var c=cc(),h='<div class="top"><div><h1>غیاباتی خوێندکاران</h1><p class="sub" style="margin:0">'+esc(S.prof.full_name||S.prof.email)+' · '+(isA()?'ئەدمین':'مامۆستا')+'</p></div><button class="ghost" data-a="out">دەرچوون</button></div>';
+  h+=vInstall();
+  if(S.err)h+='<div class="err">'+esc(S.err)+'</div>';
+  h+='<div class="courses">'+S.courses.map(function(x){return '<button class="course'+(x.id==S.cur?' on':'')+'" data-a="course" data-id="'+x.id+'"><b>'+esc(x.name)+'</b><span>'+esc(x.day)+' · '+esc(x.time)+'</span></button>'}).join('')+'</div>';
+  if(tabs.length>1)h+='<div class="tabs">'+tabs.map(function(t){return '<button class="tab'+(S.tab==t[0]?' on':'')+'" data-a="tab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
+  if(S.tab=='crs')h+=vCourses();
+  else if(S.tab=='tch')h+=vTeachers();
+  else if(!c)h+='<p class="sub">'+(isA()?'هیچ وانەیەک نییە. لە «وانەکان» زیادی بکە.':'هیشتا هیچ وانەیەکت پێ نەدراوە. پەیوەندی بە بەڕێوەبەر بکە.')+'</p>';
+  else h+=S.tab=='att'?vAtt(c):vRep(c);
+  app.innerHTML=h;
+}
+
+document.addEventListener('click',async function(e){
+  var b=e.target.closest('button');if(!b||!b.dataset.a)return;var a=b.dataset.a,id=b.dataset.id;S.err='';
+  if(a=='install'&&DP){DP.prompt();await DP.userChoice;DP=null;return render()}
+  if(a=='login')return login();
+  if(a=='out')return logout();
+  if(a=='tab'){S.tab=id;S.armed='';S.msg='';await loadTab();return render()}
+  if(a=='course'){S.cur=id;S.msg='';await loadTab();return render()}
+  if(a=='st')return setS(b.dataset.i,b.dataset.v);
+  if(a=='allp')return allP();
+  if(a=='xl')return exportX();
+  if(a=='addc')return addCourse();
+  if(a=='addst')return addStudent(id);
+  if(a=='delst'){fail(await sb.from('students').delete().eq('id',id));await loadBase();return render()}
+  if(a=='delc'){if(S.armed!=id){S.armed=id;return render()}S.armed='';fail(await sb.from('courses').delete().eq('id',id));await loadBase();return render()}
+});
+document.addEventListener('keydown',function(e){if(e.key=='Enter'&&e.target.id=='pw')login()});
+document.addEventListener('change',async function(e){
+  var t=e.target,d=t.dataset;
+  if(t.id=='dt'&&t.value){S.date=t.value;await loadTab();return render()}
+  if(t.id=='mo'&&t.value){S.month=t.value;S.msg='';await loadTab();return render()}
+  if(d.cf){var u={};u[d.cf]=t.value.trim();fail(await sb.from('courses').update(u).eq('id',d.id));await loadBase();return render()}
+  if(d.tn){fail(await sb.from('profiles').update({full_name:t.value.trim()}).eq('id',d.tn));await loadBase();return render()}
+  if(d.tc){var p=d.tc.split('|');
+    if(t.checked)fail(await sb.from('teacher_courses').insert({teacher_id:p[0],course_id:p[1]}));
+    else fail(await sb.from('teacher_courses').delete().eq('teacher_id',p[0]).eq('course_id',p[1]));
+    await loadBase();render();
+  }
+});
+boot();
+</script>
+</body>
+</html>
+
+{
+ "name": "غیاباتی خوێندکاران",
+ "short_name": "غیابات",
+ "lang": "ckb",
+ "dir": "rtl",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#2457d6",
+ "theme_color": "#2457d6",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
+var V='att-v1',FILES=['./','index.html','manifest.json','icon-192.png','icon-512.png'];
+self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(FILES)}));self.skipWaiting()});
+self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!=V}).map(function(x){return caches.delete(x)}))}));self.clients.claim()});
+self.addEventListener('fetch',function(e){var r=e.request;if(r.method!='GET'||new URL(r.url).origin!=location.origin)return;
+e.respondWith(fetch(r).then(function(res){var cp=res.clone();caches.open(V).then(function(c){c.put(r,cp)});return res}).catch(function(){return caches.match(r).then(function(m){return m||caches.match('index.html')})}))});
