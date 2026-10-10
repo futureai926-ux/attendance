@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10285a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>غیاباتی خوێندکاران</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--tx:#0e1a30;--mu:#66748d;--bd:#e3e8f1;--navy:#10285a;--pri:#1d4ed8;--pri-s:#e8efff;--on-pri:#fff;--on-st:#fff;
+--ok:#0b8f63;--ok-s:#dff5eb;--bad:#d4303f;--bad-s:#fde8ea;--warn:#b8740a;--warn-s:#fff1d6;--sh:0 1px 2px rgba(16,40,90,.06),0 6px 18px rgba(16,40,90,.06);--r:16px}
+@media(prefers-color-scheme:dark){:root{--bg:#0a1120;--card:#121c31;--tx:#e9eefb;--mu:#8e9bb5;--bd:#22304a;--navy:#0d1b3a;--pri:#6a93ff;--pri-s:#1b2a4d;--on-pri:#0a1120;--on-st:#0a1120;--ok:#3ed39b;--ok-s:#12372b;--bad:#ff7482;--bad-s:#43202a;--warn:#f3b04a;--warn-s:#3d2f16;--sh:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Vazirmatn',Tahoma,system-ui,sans-serif;line-height:1.65;-webkit-tap-highlight-color:transparent}
+body.auth{background:linear-gradient(160deg,var(--navy),#1b3d8f 60%,#2457d6);min-height:100vh}
+#bar:empty,#nav:empty{display:none}
+#bar{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--navy),#1b3d8f);color:#fff;padding-top:env(safe-area-inset-top,0);box-shadow:0 2px 12px rgba(10,20,50,.25)}
+.appbar{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand img{width:38px;height:38px;border-radius:11px;box-shadow:0 0 0 2px rgba(255,255,255,.22)}
+.brand h1{margin:0;font-size:1rem;font-weight:800;line-height:1.3}
+.brand span{display:block;font-size:.74rem;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw}
+.ico{width:40px;height:40px;flex:none;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;cursor:pointer}
+.ico svg,.bnav svg{width:21px;height:21px}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 110px}
+.ptitle{font-size:1.15rem;font-weight:800;margin:4px 0 12px}
+.sub{color:var(--mu);font-size:.86rem;margin:0 0 10px}
+.note{color:var(--mu);font-size:.78rem;margin:10px 2px 0}
+.courses{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}
+.courses::-webkit-scrollbar{display:none}
+.course{flex:0 0 auto;min-width:128px;text-align:right;background:var(--card);border:1.5px solid var(--bd);border-radius:14px;padding:9px 13px;color:var(--tx);font:inherit;cursor:pointer;box-shadow:var(--sh);transition:.15s}
+.course b{display:block;font-size:.92rem}.course span{font-size:.74rem;color:var(--mu)}
+.course.on{background:var(--pri);border-color:var(--pri);color:var(--on-pri)}.course.on span{color:inherit;opacity:.85}
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0);box-shadow:0 -4px 20px rgba(16,40,90,.08)}
+.bnav{max-width:680px;margin:0 auto;display:flex}
+.bnav button{flex:1;background:none;border:0;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;font:inherit;font-size:.68rem;font-weight:600;color:var(--mu);cursor:pointer}
+.bnav i{display:grid;place-items:center;width:48px;height:28px;border-radius:14px;transition:.15s}
+.bnav button.on{color:var(--pri)}.bnav button.on i{background:var(--pri-s)}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:10px;box-shadow:var(--sh)}
+.bar input{flex:1;min-width:140px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 6px;text-align:center;box-shadow:var(--sh)}
+.stat b{display:block;font-size:1.4rem;line-height:1.25}.stat span{font-size:.74rem;color:var(--mu)}
+.stat.ok b{color:var(--ok)}.stat.bad b{color:var(--bad)}.stat.warn b{color:var(--warn)}.stat.pri b{color:var(--pri)}
+.row{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh)}
+.st{display:flex;flex-direction:column;gap:10px}
+.who{display:flex;align-items:center;gap:10px}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
+.nm{font-weight:600}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--bg);border-radius:12px;padding:4px}
+.btns button{font:inherit;font-size:.86rem;font-weight:600;padding:8px 4px;border-radius:9px;border:0;background:transparent;color:var(--mu);cursor:pointer;transition:.12s}
+.btns .p.on{background:var(--ok);color:var(--on-st)}.btns .a.on{background:var(--bad);color:var(--on-st)}.btns .e.on{background:var(--warn);color:var(--on-st)}
+input,select{font:inherit;padding:10px 12px;border:1.5px solid var(--bd);border-radius:11px;background:var(--card);color:var(--tx);min-width:0}
+input:focus{border-color:var(--pri);outline:0;box-shadow:0 0 0 3px var(--pri-s)}
+.all{font:inherit;font-weight:600;background:var(--pri);color:var(--on-pri);border:0;border-radius:11px;padding:10px 16px;cursor:pointer;transition:transform .1s}
+.all:active{transform:scale(.97)}
+.ghost{font:inherit;font-size:.85rem;background:transparent;border:1.5px solid var(--bd);color:var(--tx);border-radius:11px;padding:7px 12px;cursor:pointer}
+.danger{font:inherit;font-size:.85rem;background:var(--bad-s);color:var(--bad);border:0;border-radius:11px;padding:8px 14px;margin-top:10px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.scroll{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bd);background:var(--card);box-shadow:var(--sh)}
+.rep{width:100%;border-collapse:collapse;font-size:.88rem}
+.rep th{background:var(--bg);color:var(--mu);font-size:.74rem;font-weight:600;padding:10px 8px;text-align:center;white-space:nowrap}
+.rep td{padding:10px 8px;text-align:center;border-top:1px solid var(--bd)}
+.rep td:first-child,.rep th:first-child{text-align:right;padding-right:14px}
+.pill{display:inline-block;padding:1px 10px;border-radius:99px;font-weight:700;font-size:.8rem;white-space:nowrap}
+.ok{background:var(--ok-s);color:var(--ok)}.warn{background:var(--warn-s);color:var(--warn)}.bad{background:var(--bad-s);color:var(--bad)}
+.alert{background:var(--warn-s);color:var(--warn);border:1px solid var(--warn);border-radius:var(--r);padding:11px 14px;margin-bottom:12px;font-size:.88rem}
+.alert .ah{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.alert .ghost{color:inherit;border-color:currentColor;padding:4px 10px}
+.alert .li{display:flex;justify-content:space-between;gap:8px;padding:7px 0;margin-top:7px;border-top:1px solid color-mix(in srgb,currentColor 25%,transparent);flex-wrap:wrap}
+.err{background:var(--bad-s);color:var(--bad);border-radius:12px;padding:9px 13px;margin-bottom:12px;font-size:.86rem}
+.empty{background:var(--card);border:1.5px dashed var(--bd);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--mu);font-size:.9rem}
+.inst{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem}
+.g3{display:grid;grid-template-columns:2fr 1.2fr 1fr;gap:6px;margin-bottom:10px}.g3 input{width:100%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g2 label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mu);gap:4px}.g2 input{width:100%}
+.chip{display:inline-flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:2px 4px 2px 12px;margin:0 0 6px 6px;font-size:.84rem}
+.chip button{background:none;border:0;color:var(--bad);font-size:1.1rem;cursor:pointer;padding:0 7px}
+.add{display:flex;gap:8px;margin-top:6px}.add input{flex:1}
+.chk{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px 12px;font-size:.88rem}
+.login{max-width:380px;margin:9vh auto 0;background:var(--card);border-radius:22px;padding:28px 22px;box-shadow:0 20px 50px rgba(5,15,40,.35);text-align:center}
+.login img{width:72px;height:72px;border-radius:20px;margin-bottom:10px}
+.login h1{font-size:1.3rem;font-weight:800;margin:0 0 4px}
+.login input{width:100%;margin-bottom:10px;text-align:left}
+.login .all{width:100%;padding:12px}
+</style>
+</head>
+<body>
+<header id="bar"></header>
+<main class="wrap" id="app"></main>
+<nav id="nav"></nav>
+<script>
+var SB_URL='https://tuzurgxqhcjdnnqydamu.supabase.co';
+var SB_KEY='sb_publishable_AYxHoDMEctSuZ1u_hHyALg_bw7TT3mJ';
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var today=new Date().toISOString().slice(0,10);
+var S={user:null,prof:null,courses:[],students:[],teachers:[],tc:[],cur:'',tab:'att',date:today,month:today.slice(0,7),att:{},rep:[],err:'',msg:'',armed:'',alerts:[],alertMap:{},abs:{},showAl:false,ready:false};
+var LIMIT=7,alT;
+var isA=function(){return S.prof&&S.prof.role=='admin'};
+var $=function(id){return document.getElementById(id)};
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function cc(){return S.courses.find(function(c){return c.id==S.cur})}
+function fail(r){if(r&&r.error){S.err=r.error.message;return true}return false}
+
+async function boot(){
+  var s=await sb.auth.getSession();
+  if(!s.data.session){S.user=null;S.ready=true;return render()}
+  S.user=s.data.session.user;
+  var p=await sb.from('profiles').select('*').eq('id',S.user.id).single();
+  S.prof=p.data;
+  if(!S.prof){S.err='پڕۆفایلەکەت نەدۆزرایەوە';S.ready=true;return render()}
+  await loadBase();await loadAlerts();S.tab=isA()?'att':'rep';await loadTab();S.ready=true;render();
+}
+async function loadBase(){
+  var r=await Promise.all([sb.from('courses').select('*').order('created_at'),sb.from('students').select('*').order('created_at')]);
+  fail(r[0]);fail(r[1]);S.courses=r[0].data||[];S.students=r[1].data||[];
+  if(!cc())S.cur=S.courses[0]?S.courses[0].id:'';
+  if(isA()){var t=await Promise.all([sb.from('profiles').select('*').eq('role','teacher').order('created_at'),sb.from('teacher_courses').select('*')]);S.teachers=t[0].data||[];S.tc=t[1].data||[]}
+}
+async function loadTab(){
+  if(!S.cur)return;
+  if(S.tab=='att'){var r=await sb.from('attendance').select('student_id,status').eq('course_id',S.cur).eq('date',S.date);fail(r);S.att={};(r.data||[]).forEach(function(x){S.att[x.student_id]=x.status})}
+  if(S.tab=='rep'){S.rep=await fetchAtt(S.cur,S.month)}
+}
+async function loadAlerts(){
+  var rows=[],from=0,ab={};
+  for(;;){
+    var r=await sb.from('attendance').select('student_id,status').order('id').range(from,from+999);
+    if(r.error||!r.data)break;rows=rows.concat(r.data);if(r.data.length<1000)break;from+=1000;
+  }
+  rows.forEach(function(x){if(x.status=='a')ab[x.student_id]=(ab[x.student_id]||0)+1});
+  S.abs=ab;S.alerts=[];S.alertMap={};
+  S.students.forEach(function(s){
+    var c=S.courses.find(function(c){return c.id==s.course_id});if(!c)return;
+    var tot=+c.total_sessions||43,lim=+c.alert_pct||7,a=ab[s.id]||0,p=Math.round(a/tot*1000)/10;
+    if(a>0&&p>=lim){S.alerts.push({name:s.name,course:c.name,cid:c.id,a:a,n:tot,p:p});S.alertMap[s.id]=p}
+  });
+  S.alerts.sort(function(x,y){return y.p-x.p});
+}
+function schedAl(){clearTimeout(alT);alT=setTimeout(async function(){await loadAlerts();render()},1500)}
+async function fetchAtt(cid,m){
+  var p=m.split('-'),last=new Date(+p[0],+p[1],0).getDate(),out=[],from=0;
+  for(;;){
+    var r=await sb.from('attendance').select('student_id,date,status').eq('course_id',cid).gte('date',m+'-01').lte('date',m+'-'+String(last).padStart(2,'0')).order('id').range(from,from+999);
+    if(fail(r))break;out=out.concat(r.data);if(r.data.length<1000)break;from+=1000;
+  }
+  return out;
+}
+function calc(cid,rows){
+  var sts=S.students.filter(function(s){return s.course_id==cid}),map={},ds=[],cs=S.courses.find(function(c){return c.id==cid}),tot=(cs&&+cs.total_sessions)||43;
+  rows.forEach(function(r){map[r.student_id+'|'+r.date]=r.status;if(ds.indexOf(r.date)<0)ds.push(r.date)});ds.sort();
+  return{ds:ds,out:sts.map(function(s){var p=0,a=0,e=0,cells=ds.map(function(d){var v=map[s.id+'|'+d];if(v=='p'){p++;return'ئامادە'}if(v=='a'){a++;return'غائیب'}if(v=='e'){e++;return'مۆڵەت'}return''});
+    var ya=S.abs[s.id]||0;return{n:s.name,cells:cells,p:p,a:a,e:e,ya:ya,pct:Math.round(ya/tot*1000)/10}})};
+}
+
+async function login(){
+  var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if(r.error){S.err=/fetch|network/i.test(r.error.message)?'پەیوەندی بە داتابەیسەوە نەکرا. فایلەکە لەسەر Netlify بکەرەوە، نەک لەناو Claude.':'ئیمەیڵ یان وشەی نهێنی هەڵەیە';render();return}
+  S.err='';await boot();
+}
+async function logout(){await sb.auth.signOut();S.prof=null;S.user=null;S.courses=[];S.students=[];S.err='';render()}
+async function setS(sid,v){S.att[sid]=v;render();fail(await sb.from('attendance').upsert({course_id:S.cur,student_id:sid,date:S.date,status:v},{onConflict:'student_id,date'}));if(S.err)render();else schedAl()}
+async function allP(){
+  var rows=S.students.filter(function(s){return s.course_id==S.cur}).map(function(s){S.att[s.id]='p';return{course_id:S.cur,student_id:s.id,date:S.date,status:'p'}});
+  render();if(!rows.length)return;fail(await sb.from('attendance').upsert(rows,{onConflict:'student_id,date'}));if(S.err)render();else schedAl();
+}
+async function addCourse(){
+  var n=$('ncn').value.trim();if(!n)return;
+  fail(await sb.from('courses').insert({name:n,day:$('ncd').value.trim(),time:$('nct').value.trim()}));
+  await loadBase();render();
+}
+async function addStudent(cid){
+  var el=$('ns_'+cid),n=el.value.trim();if(!n)return;
+  fail(await sb.from('students').insert({course_id:cid,name:n}));await loadBase();render();
+}
+async function exportX(){
+  S.msg='تکایە چاوەڕێ بکە...';render();
+  var wb=XLSX.utils.book_new(),used={};
+  for(var i=0;i<S.courses.length;i++){
+    var c=S.courses[i],r=calc(c.id,await fetchAtt(c.id,S.month)),aoa=[['ناوی خوێندکار'].concat(r.ds,['ئامادە (مانگ)','غائیب (مانگ)','مۆڵەت (مانگ)','غیابی ساڵ','ڕێژەی ساڵانە %'])];
+    r.out.forEach(function(o){aoa.push([o.n].concat(o.cells,[o.p,o.a,o.e,o.ya,o.pct]))});
+    var ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:22}];
+    var sn=c.name.replace(/[\[\]:*?\/\\]/g,'').slice(0,28)||'sheet';if(used[sn])sn+=' '+(i+1);used[sn]=1;
+    XLSX.utils.book_append_sheet(wb,ws,sn);
+  }
+  wb.Workbook={Views:[{RTL:true}]};
+  var buf=XLSX.write(wb,{bookType:'xlsx',type:'array'}),url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})),a=document.createElement('a');
+  a.href=url;a.download='attendance-'+S.month+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},3000);
+  S.msg='فایلی Excel داگیرا';render();
+}
+
+var DP=null,standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone,isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();DP=e;render()});
+window.addEventListener('appinstalled',function(){DP=null;standalone=true;render()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+function vInstall(){
+  if(standalone)return '';
+  if(DP)return '<div class="row inst"><span>وەک ئەپ دایبەزێنە بۆ کردنەوەی خێراتر</span><button class="all" data-a="install">دابەزاندن</button></div>';
+  if(isIOS)return '<div class="row inst"><span>لە iPhone: دوگمەی Share ← Add to Home Screen</span></div>';
+  return '';
+}
+function svg(d){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>'}
+var ICON={att:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>',rep:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',crs:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>',set:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',tch:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',out:'<path d="M15 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h12"/>'};
+function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return h}
+function empty(x){return '<div class="empty">'+x+'</div>'}
+function vLogin(){
+  return '<div class="login"><img src="icon-192.png" alt=""><h1>غیاباتی خوێندکاران</h1><p class="sub">بۆ بەردەوامبوون بچۆ ژوورەوە</p>'+(S.err?'<div class="err">'+esc(S.err)+'</div>':'')+
+  '<input id="em" type="email" placeholder="ئیمەیڵ" autocomplete="username" dir="ltr"><input id="pw" type="password" placeholder="وشەی نهێنی" autocomplete="current-password" dir="ltr"><button class="all" data-a="login">چوونەژوورەوە</button></div>';
+}
+function vAtt(c){
+  var sts=S.students.filter(function(s){return s.course_id==c.id}),np=0,na=0,ne=0;
+  sts.forEach(function(s){var v=S.att[s.id];if(v=='p')np++;if(v=='a')na++;if(v=='e')ne++});
+  var h='<div class="bar"><input type="date" id="dt" value="'+S.date+'" aria-label="ڕێکەوت"><button class="all" data-a="allp">هەمووی ئامادە</button></div>'+
+    '<div class="stats"><div class="stat ok"><b>'+np+'</b><span>ئامادە</span></div><div class="stat bad"><b>'+na+'</b><span>غائیب</span></div><div class="stat warn"><b>'+ne+'</b><span>مۆڵەت</span></div></div>';
+  if(!sts.length)h+=empty('ئەم وانەیە خوێندکاری نییە. لە «وانەکان» زیادیان بکە.');
+  sts.forEach(function(s){var v=S.att[s.id];
+    h+='<div class="row st"><div class="who"><span class="av" style="background:hsl('+hue(s.name)+' 55% 42%)">'+esc(String(s.name).trim().charAt(0))+'</span><div class="nm">'+esc(s.name)+(S.alertMap[s.id]!=null?' <span class="pill warn">⚠ '+S.alertMap[s.id]+'%</span>':'')+'</div></div><div class="btns">'+
+    [['p','ئامادە'],['a','غائیب'],['e','مۆڵەت']].map(function(t){return '<button class="'+t[0]+(v==t[0]?' on':'')+'" data-a="st" data-i="'+s.id+'" data-v="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div></div>'});
+  return h;
+}
+function vRep(c){
+  var r=calc(c.id,S.rep),al=+c.alert_pct||7,nst=S.students.filter(function(s){return s.course_id==c.id}).length,nal=S.alerts.filter(function(x){return x.cid==c.id}).length;
+  var h='<div class="bar"><input type="month" id="mo" value="'+S.month+'" aria-label="مانگ"><button class="all" data-a="xl">داگرتنی Excel</button></div>'+(S.msg?'<p class="sub">'+esc(S.msg)+'</p>':'')+
+    '<div class="stats"><div class="stat pri"><b>'+nst+'</b><span>خوێندکار</span></div><div class="stat"><b>'+r.ds.length+'</b><span>وانەی ئەم مانگە</span></div><div class="stat '+(nal?'bad':'ok')+'"><b>'+nal+'</b><span>ئاگادارکردنەوە</span></div></div>';
+  if(!r.ds.length)return h+empty('لەم مانگەدا غیاب تۆمار نەکراوە.');
+  return h+'<div class="scroll"><table class="rep"><tr><th>خوێندکار</th><th>ئامادە</th><th>غائیب</th><th>مۆڵەت</th><th>غیابی ساڵ</th></tr>'+
+    r.out.map(function(x){var k=x.pct>=al*2?'bad':x.pct>=al?'warn':'ok';return '<tr><td>'+esc(x.n)+'</td><td>'+x.p+'</td><td>'+x.a+'</td><td>'+x.e+'</td><td><span class="pill '+k+'">'+x.ya+' · '+x.pct+'%</span></td></tr>'}).join('')+'</table></div>'+
+    '<p class="note">ئامادە و غائیب و مۆڵەت هی ئەم مانگەن. «غیابی ساڵ» کۆی غیابی ساڵەکەیە و ڕێژەکەی لە ژمارەی گشتی وانەکانی ساڵ حیساب دەکرێت (لە ڕێکخستن دەگۆڕدرێت).</p><p class="note">فایلی Excel هەموو وانەکانت لەخۆ دەگرێت، هەر وانەیەک لە شیتێکی جیا.</p>';
+}
+function vCourses(){
+  var h=S.msg?'<p class="sub">'+esc(S.msg)+'</p>':'';
+  S.courses.forEach(function(x){
+    h+='<div class="row"><div class="g3"><input data-cf="name" data-id="'+x.id+'" value="'+esc(x.name)+'" aria-label="ناوی وانە"><input data-cf="day" data-id="'+x.id+'" value="'+esc(x.day)+'" aria-label="ڕۆژ"><input data-cf="time" data-id="'+x.id+'" value="'+esc(x.time)+'" aria-label="کات"></div><div>'+
+    S.students.filter(function(s){return s.course_id==x.id}).map(function(s){return '<span class="chip">'+esc(s.name)+'<button data-a="delst" data-id="'+s.id+'" aria-label="سڕینەوە">×</button></span>'}).join('')+'</div>'+
+    '<div class="add"><input id="ns_'+x.id+'" placeholder="ناوی خوێندکاری نوێ"><button class="all" data-a="addst" data-id="'+x.id+'">زیادکردن</button></div>'+
+    '<div style="margin-top:8px"><label class="ghost" style="cursor:pointer;display:inline-block">ئەپلۆدی ناوەکان لە Excel<input type="file" accept=".xlsx,.xls,.csv" data-imp="'+x.id+'" hidden></label></div>'+
+    '<button class="danger" data-a="delc" data-id="'+x.id+'">'+(S.armed==x.id?'دڵنیایت؟ هەموو خوێندکار و غیابەکانیشی دەسڕێنەوە. دووبارە کلیک بکە':'سڕینەوەی وانە')+'</button></div>';
+  });
+  return h+'<div class="row"><div class="nm">وانەی نوێ</div><div class="g3"><input id="ncn" placeholder="ناوی وانە"><input id="ncd" placeholder="ڕۆژ"><input id="nct" placeholder="کات"></div><button class="all" data-a="addc">زیادکردنی وانە</button></div>';
+}
+function vTeachers(){
+  if(!S.teachers.length)return '<div class="empty">هێشتا هیچ مامۆستایەک نییە. لە Supabase بچۆ بۆ Authentication ← Users ← Add user و ئەکاونتی مامۆستا دروست بکە، پاشان لێرە دەرکەوێت و وانەکانی دیاری بکە.</div>';
+  return S.teachers.map(function(t){
+    return '<div class="row"><div class="nm">'+esc(t.email)+'</div><input data-tn="'+t.id+'" value="'+esc(t.full_name||'')+'" placeholder="ناوی مامۆستا" style="width:100%;margin-bottom:8px"><div>'+
+    S.courses.map(function(c){var on=S.tc.some(function(k){return k.teacher_id==t.id&&k.course_id==c.id});return '<label class="chk"><input type="checkbox" data-tc="'+t.id+'|'+c.id+'"'+(on?' checked':'')+'>'+esc(c.name)+'</label>'}).join('')+'</div></div>';
+  }).join('');
+}
+function minAbs(c){var t=+c.total_sessions||43,al=+c.alert_pct||7;for(var k=1;k<=t;k++){if(Math.round(k/t*1000)/10>=al)return k}return t}
+function vSettings(){
+  var h='<p class="note" style="margin:0 2px 12px">ڕێژەی غیاب = ژمارەی غیابی ساڵ ÷ ژمارەی گشتی وانەکانی ساڵ. بۆ نموونە لە ٤٣ وانە، ٣ غیاب نزیکەی ٧٪ دەکات.</p>';
+  if(!S.courses.length)return h+'<p class="sub">هیچ وانەیەک نییە.</p>';
+  S.courses.forEach(function(x){
+    h+='<div class="row"><div class="nm">'+esc(x.name)+'</div><div class="g2"><label>ژمارەی گشتی وانەکانی ساڵ<input type="number" min="1" data-sf="total_sessions" data-id="'+x.id+'" value="'+(+x.total_sessions||43)+'"></label>'+
+    '<label>ڕێژەی ئاگادارکردنەوە (%)<input type="number" min="1" max="100" step="0.5" data-sf="alert_pct" data-id="'+x.id+'" value="'+(+x.alert_pct||7)+'"></label></div>'+
+    '<p class="sub" style="margin:8px 0 0">ئاگادارکردنەوە دوای <b>'+minAbs(x)+'</b> غیاب دەردەکەوێت.</p></div>';
+  });
+  return h;
+}
+async function importXls(cid,file){
+  if(!file)return;
+  S.msg='تکایە چاوەڕێ بکە...';render();
+  try{
+    var wb=XLSX.read(await file.arrayBuffer(),{type:'array',codepage:65001}),aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false});
+    var num=aoa.length>1&&aoa.slice(1).every(function(r){return /^\d+$/.test(String(r[0]==null?'':r[0]))}),col=num?1:0;
+    var names=aoa.map(function(r){return String(r&&r[col]!=null?r[col]:'').trim()}).filter(Boolean);
+    if(names.length&&/^(ناو|name)/i.test(names[0]))names.shift();
+    var have={},seen={},rows=[];
+    S.students.filter(function(s){return s.course_id==cid}).forEach(function(s){have[s.name]=1});
+    names.forEach(function(n){if(!have[n]&&!seen[n]){seen[n]=1;rows.push({course_id:cid,name:n})}});
+    if(!rows.length){S.msg='هیچ ناوێکی نوێ نەدۆزرایەوە';return render()}
+    if(fail(await sb.from('students').insert(rows))){S.msg='';return render()}
+    await loadBase();await loadAlerts();S.msg=rows.length+' خوێندکار زیادکران';
+  }catch(e){S.msg='فایلەکە نەخوێندرایەوە. دڵنیابە Excel یان CSV ـە'}
+  render();
+}
+function vAlerts(){
+  if(!S.alerts.length)return '';
+  var h='<div class="alert"><div class="ah"><b>⚠ '+S.alerts.length+' خوێندکار گەیشتوونەتە ئاستی ئاگادارکردنەوەی غیاب</b><button class="ghost" data-a="al">'+(S.showAl?'شاردنەوە':'پیشاندان')+'</button></div>';
+  if(S.showAl)h+=S.alerts.map(function(x){return '<div class="li"><span>'+esc(x.name)+' <small>· '+esc(x.course)+'</small></span><span>'+x.a+' غیاب لە '+x.n+' وانەی ساڵ · <b>'+x.p+'%</b></span></div>'}).join('');
+  return h+'</div>';
+}
+function render(){
+  var app=$('app'),bar=$('bar'),nav=$('nav');
+  document.body.className=S.prof?'':'auth';
+  if(!S.ready){bar.innerHTML='';nav.innerHTML='';app.innerHTML='<p class="sub" style="text-align:center;margin-top:30vh;color:#fff">چاوەڕێ بکە...</p>';return}
+  if(!S.prof){bar.innerHTML='';nav.innerHTML='';app.innerHTML=vLogin()+'<div style="max-width:380px;margin:16px auto 0">'+vInstall()+'</div>';return}
+  var TT={att:'تۆمارکردنی غیاب',rep:'ڕاپۆرت',crs:'وانە و خوێندکاران',set:'ڕێکخستن',tch:'مامۆستاکان'};
+  var tabs=isA()?[['att','تۆمارکردن'],['rep','ڕاپۆرت'],['crs','وانەکان'],['set','ڕێکخستن'],['tch','مامۆستا']]:[['rep','ڕاپۆرت']];
+  bar.innerHTML='<div class="appbar"><div class="brand"><img src="icon-192.png" alt=""><div><h1>غیاباتی خوێندکاران</h1><span>'+esc(S.prof.full_name||S.prof.email)+' · '+(isA()?'ئەدمین':'مامۆستا')+'</span></div></div><button class="ico" data-a="out" aria-label="دەرچوون">'+svg(ICON.out)+'</button></div>';
+  nav.innerHTML=tabs.length>1?'<div class="bnav">'+tabs.map(function(x){return '<button class="'+(S.tab==x[0]?'on':'')+'" data-a="tab" data-id="'+x[0]+'"><i>'+svg(ICON[x[0]])+'</i>'+x[1]+'</button>'}).join('')+'</div>':'';
+  var c=cc(),pick=(S.tab=='att'||S.tab=='rep'),h='<h2 class="ptitle">'+TT[S.tab]+'</h2>';
+  h+=vInstall();
+  if(S.err)h+='<div class="err">'+esc(S.err)+'</div>';
+  if(pick)h+=vAlerts()+'<div class="courses">'+S.courses.map(function(x){return '<button class="course'+(x.id==S.cur?' on':'')+'" data-a="course" data-id="'+x.id+'"><b>'+esc(x.name)+'</b><span>'+esc(x.day)+' · '+esc(x.time)+'</span></button>'}).join('')+'</div>';
+  if(S.tab=='crs')h+=vCourses();
+  else if(S.tab=='set')h+=vSettings();
+  else if(S.tab=='tch')h+=vTeachers();
+  else if(!c)h+=empty(isA()?'هیچ وانەیەک نییە. لە «وانەکان» زیادی بکە.':'هێشتا هیچ وانەیەکت پێ نەدراوە. پەیوەندی بە بەڕێوەبەر بکە.');
+  else h+=S.tab=='att'?vAtt(c):vRep(c);
+  app.innerHTML=h;
+}
+
+document.addEventListener('click',async function(e){
+  var b=e.target.closest('button');if(!b||!b.dataset.a)return;var a=b.dataset.a,id=b.dataset.id;S.err='';
+  if(a=='install'&&DP){DP.prompt();await DP.userChoice;DP=null;return render()}
+  if(a=='login')return login();
+  if(a=='out')return logout();
+  if(a=='tab'){S.tab=id;S.armed='';S.msg='';await loadTab();await loadAlerts();return render()}
+  if(a=='al'){S.showAl=!S.showAl;return render()}
+  if(a=='course'){S.cur=id;S.msg='';await loadTab();return render()}
+  if(a=='st')return setS(b.dataset.i,b.dataset.v);
+  if(a=='allp')return allP();
+  if(a=='xl')return exportX();
+  if(a=='addc')return addCourse();
+  if(a=='addst')return addStudent(id);
+  if(a=='delst'){fail(await sb.from('students').delete().eq('id',id));await loadBase();return render()}
+  if(a=='delc'){if(S.armed!=id){S.armed=id;return render()}S.armed='';fail(await sb.from('courses').delete().eq('id',id));await loadBase();return render()}
+});
+document.addEventListener('keydown',function(e){if(e.key=='Enter'&&e.target.id=='pw')login()});
+document.addEventListener('change',async function(e){
+  var t=e.target,d=t.dataset;
+  if(t.id=='dt'&&t.value){S.date=t.value;await loadTab();return render()}
+  if(t.id=='mo'&&t.value){S.month=t.value;S.msg='';await loadTab();return render()}
+  if(d.imp){var f=t.files[0];t.value='';return importXls(d.imp,f)}
+  if(d.sf){var u2={};u2[d.sf]=+t.value;if(!(u2[d.sf]>0))return render();fail(await sb.from('courses').update(u2).eq('id',d.id));await loadBase();await loadAlerts();return render()}
+  if(d.cf){var u={};u[d.cf]=t.value.trim();fail(await sb.from('courses').update(u).eq('id',d.id));await loadBase();return render()}
+  if(d.tn){fail(await sb.from('profiles').update({full_name:t.value.trim()}).eq('id',d.tn));await loadBase();return render()}
+  if(d.tc){var p=d.tc.split('|');
+    if(t.checked)fail(await sb.from('teacher_courses').insert({teacher_id:p[0],course_id:p[1]}));
+    else fail(await sb.from('teacher_courses').delete().eq('teacher_id',p[0]).eq('course_id',p[1]));
+    await loadBase();render();
+  }
+});
+boot();
+</script>
+</body>
+</html>
